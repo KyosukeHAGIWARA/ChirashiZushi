@@ -1,0 +1,12 @@
+{
+  "name": "KasTwi",
+  "version": "1.0.0",
+  "description": "http://qiita.com/polikeiji/items/cc0929bc0171b6348f33",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
