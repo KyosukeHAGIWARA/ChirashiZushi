@@ -17,7 +17,7 @@ function createWindow () {
   
   mainWindow.loadURL(kasumi);
   mainWindow.webContents.on("did-finish-load", function(){
-    mainWindow.webContents.savePage("./data/weia.html", "HTMLComplete", function(error){
+    mainWindow.webContents.savePage("./data/kasumi_sakura.html", "HTMLComplete", function(error){
       if(!error){
         console.log("save complete");
         mainWindow.close();
