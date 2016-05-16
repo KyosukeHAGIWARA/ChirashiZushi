@@ -58,36 +58,32 @@ def pdf_to_png(root_path):
 
                 print "convert {0} to {1}".format(org_path, png_path)
 
-                if subprocess.call(["convert", "-density", "100", "-trim", org_path, png_path]) != 0:
+                if subprocess.call(["convert", "-density", "130", "-trim", org_path, png_path]) != 0:
                     print "failed: {0}".format(org_path)
 
 
 # return twitter oath
 def get_oauth():
     conf = ConfigParser.SafeConfigParser()
-    conf.read("twitter.ini")
+    conf.read("./twitter.ini")
     auth = OAuthHandler(conf.get("Twitter", "CK"), conf.get("Twitter", "CS"))
     auth.set_access_token(conf.get("Twitter", "AT"), conf.get("Twitter", "AS"))
     return auth
-
-# test tweet function
-def update_tweet(text):
-    auth = get_oauth()
-    api = API(auth)
-    api.update_status(status=text)
 
 # tweet Chirashi images 
 def chirath(root_path, scheme):
     auth = get_oauth()
     api = API(auth)
     reply_id = None
-    text = unicode(scheme).encode('utf-8')  
+    text = unicode(scheme).encode('utf-8') + "のチラシ情報です"  
     for dirpath, _, filenames in os.walk(root_path):
+        filenames.sort()
+        filenames.reverse()
         for filename in filenames:
             if fnmatch.fnmatch(filename, "*.png"):
                 st = api.update_with_media(filename=(root_path + "/" + filename), status=text, in_reply_to_status_id=reply_id)
-                print(type(st))
                 reply_id = st.id
+                text = "(続き) " + text
                 sleep(5)
         else:
             reply_id = None
