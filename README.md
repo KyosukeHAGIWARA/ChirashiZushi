@@ -1,5 +1,5 @@
 #ちらしずし
-![PNG]("./chirashizushi.png" "")
+<img src="https://github.com/KyosukeHagiwara/ChirashiZushi/blob/master/chirashizushi.png" width="200px">
 ##Description
 + カスミのチラシはカスミHPから見れますが、毎回毎回見に行くのも何なので、チラシの画像だけtwitterで見れればなぁと思って作りました。
 + HPをスクレイピングしてpdf拾ってきてpngに直して投稿みたいなちょっとめんどくさいことやってます。単に近道を知らないだけです。
