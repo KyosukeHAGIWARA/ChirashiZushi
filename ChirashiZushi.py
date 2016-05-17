@@ -83,7 +83,7 @@ def chirath(root_path, shop, scheme):
         filenames.reverse()
         for filename in filenames:
             if fnmatch.fnmatch(filename, "*.png"):
-                st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing]"+text, in_reply_to_status_id=reply_id)
+                st = api.update_with_media(filename=(root_path + "/" + filename), status=text, in_reply_to_status_id=reply_id)
                 # print(text)
                 reply_id = st.id
                 text = "(続き) " + text
