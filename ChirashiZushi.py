@@ -16,9 +16,9 @@ now = datetime.now().strftime("%s")
 parent = "./data/" + now
 
 shop_name = {
-    "kasumi" : "カスミ テクノパーク桜店",
-    "marumo" : "マルモ学園店",
-    "aeon" : "イオンつくば駅前店",
+    "kasumi": "カスミ テクノパーク桜店",
+    "marumo": "マルモ学園店",
+    "aeon": "イオンつくば駅前店",
 }
 
 
@@ -37,9 +37,9 @@ def get_chirashi_data(shop):
             second_soup = BeautifulSoup(second_html, "lxml")
             c_url = second_soup.meta.get("content").lstrip("0;URL=")
             c_data = {
-                "url" : c_url,
-                "scheme" : c_scheme.encode("utf-8"),
-                "id" : c_id,
+                "url": c_url,
+                "scheme": c_scheme.encode("utf-8"),
+                "id": c_id,
             }
             chirashis.append(c_data)
 
@@ -53,6 +53,7 @@ def get_chirashi_data(shop):
 # generate pdf data from redirect URL
 def gen_chirashi_pdf(url, dirpath, outname):
     path = dirpath + "/" + outname
+    print("pathpath " + url)
     if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
                     print("pdf_error " + url)
                     tweet_error("@Rawashi_coins pdf_error " + url)
@@ -112,7 +113,8 @@ if __name__ == '__main__':
     for shop in shop_name.keys():
         shopdir = parent + "/" + shop
         os.makedirs(shopdir)
-        for i, chirashi in enumerate(get_chirashi_data(shop)):
+        chirashis = get_chirashi_data(shop)
+        for i, chirashi in enumerate(chirashis):
             currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
             outname = shop + str(i) + ".pdf"
