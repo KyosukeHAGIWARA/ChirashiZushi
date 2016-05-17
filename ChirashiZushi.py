@@ -47,29 +47,6 @@ def get_chirashi_url(shop):
         pass
     return chirashis
 
-# Scraping KASUMI and get Chirashi Data
-def chirashi_search():
-    dat = open("./data/kasumi_sakura.html", "r").read()
-    kasumi_soup = BeautifulSoup(dat, "lxml")
-    chirashis = []
-    for chirashi in kasumi_soup.select("#chirashiList1")[0].children:
-        c_id = chirashi.get("id")
-        c_scheme = chirashi.select(".shufoo-scheme")[0].contents[0]
-        c_url = chirashi.select(".shufoo-pdf")[0].a.get("href")
-        c_data = (c_id, c_scheme, c_url)
-        chirashis.append(c_data)
-    return chirashis
-
-
-def gen_chirashi_pdf(url, dirpath, outname):
-    pass
-
-def pdf_to_png(dirpath):
-    pass
-
-def chirath(dirpath, shop, scheme):
-    pass
-
 # # Scraping KASUMI and get Chirashi Data
 # def chirashi_search():
 #     dat = open("./data/kasumi_sakura.html", "r").read()
@@ -83,6 +60,14 @@ def chirath(dirpath, shop, scheme):
 #         chirashis.append(c_data)
 #     return chirashis
 
+
+def gen_chirashi_pdf(url, dirpath, outname):
+    path = dirpath + "/" + outname
+    if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
+                    print "failed: {0}".format(url)
+                    tweet_error("@Rawashi_coins pdf_error")
+
+
 # # generate pdf data from redirect URL
 # def gen_chirashi_pdf(c_data, parent_path):
 #     target = c_data[2]
@@ -93,6 +78,17 @@ def chirath(dirpath, shop, scheme):
 #     if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
 #                     print "failed: {0}".format(url)
 #     return path
+
+
+
+
+def pdf_to_png(dirpath):
+    pass
+
+def chirath(dirpath, shop, scheme):
+    pass
+
+
 
 # # convert Chirashi pdf to png
 # def pdf_to_png(root_path):
@@ -136,6 +132,11 @@ def chirath(root_path, scheme):
                 sleep(5)
         else:
             reply_id = None
+
+def tweet_error(text):
+    auth = get_oauth()
+    api = API(auth)
+    api.update_status(status=text)
 
 
 if __name__ == '__main__':
