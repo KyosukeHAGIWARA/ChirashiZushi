@@ -85,16 +85,20 @@ def gen_chirashi_pdf(url, dirpath, outname):
 
 
 
+# convert Chirashi pdf to png
+def pdf_to_png(root_path):
+    for dirpath, _, filenames in os.walk(root_path):
+        for filename in filenames:
+            if fnmatch.fnmatch(filename, u"*.pdf"):
+                org_path = os.path.join(dirpath, filename)
+                ppp = dirpath
+                ppp_path = os.path.join(ppp, filename)
+                png_path = ppp_path.replace(".pdf", ".png")
+                print("convert " + org_path +  " to " + png_path)
+                if subprocess.call(["convert", "-density", "130", "-trim", org_path, png_path]) != 0:
+                    print("failed: " + org_path)
+                    tweet_error("@Rawashi_coins png_error " + org_path)
 
-def pdf_to_png(dirpath):
-    pass
-
-def chirath(dirpath, shop, scheme):
-    pass
-
-
-
-# # convert Chirashi pdf to png
 # def pdf_to_png(root_path):
 #     for dirpath, _, filenames in os.walk(root_path):
 #         for filename in filenames:
@@ -104,11 +108,14 @@ def chirath(dirpath, shop, scheme):
 #                 ppp_path = os.path.join(ppp, filename)
 #                 png_path = ppp_path.replace(".pdf", ".png")
 #                 print(png_path)
-
 #                 print "convert {0} to {1}".format(org_path, png_path)
-
 #                 if subprocess.call(["convert", "-density", "130", "-trim", org_path, png_path]) != 0:
 #                     print "failed: {0}".format(org_path)
+
+
+
+def chirath(dirpath, shop, scheme):
+    pass
 
 
 # return twitter oath
@@ -156,7 +163,7 @@ if __name__ == '__main__':
             sleep(5)
             pdf_to_png(currentdir)
             sleep(10)
-            chirath(currentdir, shop, chirashi["scheme"])
+            # chirath(currentdir, shop, chirashi["scheme"])
 
     # chirashis = chirashi_search()
     # for chirashi in chirashis:
