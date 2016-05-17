@@ -3,13 +3,10 @@
 import os
 import fnmatch
 import subprocess
-import wget 
 from bs4 import BeautifulSoup
-import urllib, urllib2
-import re
+import urllib2
 from time import sleep
 from datetime import datetime
-from tweepy.streaming import StreamListener, Stream
 from tweepy.auth import OAuthHandler
 from tweepy.api import API
 import ConfigParser
@@ -24,8 +21,8 @@ shop_name = {
     "aeon" : "イオンつくば駅前店",
 }
 
-#scrape HP and get chirashi url
-def get_chirashi_url(shop):
+# scrape HP and get chirashi url,scheme
+def get_chirashi_data(shop):
     chirashis = []
     
     if shop=="kasumi":
@@ -40,7 +37,7 @@ def get_chirashi_url(shop):
             c_url = second_soup.meta.get("content").lstrip("0;URL=")
             c_data = {
                 "url" : c_url,
-                "scheme" : c_scheme,
+                "scheme" : c_scheme.encode("utf-8"),
                 "id" : c_id,
             }
             chirashis.append(c_data)
@@ -64,11 +61,11 @@ def get_chirashi_url(shop):
 #         chirashis.append(c_data)
 #     return chirashis
 
-
+# generate pdf data from redirect URL
 def gen_chirashi_pdf(url, dirpath, outname):
     path = dirpath + "/" + outname
     if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
-                    print "pdf_error " + url
+                    print("pdf_error " + url)
                     tweet_error("@Rawashi_coins pdf_error " + url)
 
 
@@ -82,8 +79,6 @@ def gen_chirashi_pdf(url, dirpath, outname):
 #     if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
 #                     print "failed: {0}".format(url)
 #     return path
-
-
 
 # convert Chirashi pdf to png
 def pdf_to_png(root_path):
@@ -113,9 +108,23 @@ def pdf_to_png(root_path):
 #                     print "failed: {0}".format(org_path)
 
 
-
-def chirath(dirpath, shop, scheme):
-    pass
+# tweet Chirashi images
+def chirath(root_path, shop, scheme):
+    api = API(get_oauth())
+    reply_id = None
+    text = "[" + shop_name[shop] + "] " + scheme + "のチラシ情報です"  
+    for dirpath, _, filenames in os.walk(root_path):
+        filenames.sort()
+        filenames.reverse()
+        for filename in filenames:
+            if fnmatch.fnmatch(filename, "*.png"):
+                st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing]"+text, in_reply_to_status_id=reply_id)
+                # print(text)
+                reply_id = st.id
+                text = "(続き) " + text
+                sleep(5)
+        else:
+            reply_id = None
 
 
 # return twitter oath
@@ -126,23 +135,25 @@ def get_oauth():
     auth.set_access_token(conf.get("Twitter", "AT"), conf.get("Twitter", "AS"))
     return auth
 
-# tweet Chirashi images 
-def chirath(root_path, scheme):
-    auth = get_oauth()
-    api = API(auth)
-    reply_id = None
-    text = unicode(scheme).encode('utf-8') + "のチラシ情報です"  
-    for dirpath, _, filenames in os.walk(root_path):
-        filenames.sort()
-        filenames.reverse()
-        for filename in filenames:
-            if fnmatch.fnmatch(filename, "*.png"):
-                st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing]"+text, in_reply_to_status_id=reply_id)
-                reply_id = st.id
-                text = "(続き) " + text
-                sleep(5)
-        else:
-            reply_id = None
+# # tweet Chirashi images 
+# def chirath(root_path, scheme):
+#     auth = get_oauth()
+#     api = API(auth)
+#     reply_id = None
+#     text = unicode(scheme).encode('utf-8') + "のチラシ情報です"  
+#     for dirpath, _, filenames in os.walk(root_path):
+#         filenames.sort()
+#         filenames.reverse()
+#         for filename in filenames:
+#             if fnmatch.fnmatch(filename, "*.png"):
+#                 st = api.update_with_media(filename=(root_path + "/" + filename),
+#                           status="[testing]"+text, in_reply_to_status_id=reply_id)
+#                 reply_id = st.id
+#                 text = "(続き) " + text
+#                 sleep(5)
+#         else:
+#             reply_id = None
+
 
 def tweet_error(text):
     auth = get_oauth()
@@ -155,7 +166,7 @@ if __name__ == '__main__':
     for shop in shop_name.keys():
         shopdir = parent + "/" + shop
         os.makedirs(shopdir)
-        for i, chirashi in enumerate(get_chirashi_url(shop)):
+        for i, chirashi in enumerate(get_chirashi_data(shop)):
             currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
             outname = shop + str(i) + ".pdf"
@@ -163,7 +174,7 @@ if __name__ == '__main__':
             sleep(5)
             pdf_to_png(currentdir)
             sleep(10)
-            # chirath(currentdir, shop, chirashi["scheme"])
+            chirath(currentdir, shop, chirashi["scheme"])
 
     # chirashis = chirashi_search()
     # for chirashi in chirashis:
