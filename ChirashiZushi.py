@@ -16,7 +16,7 @@ now = datetime.now().strftime("%s")
 parent = "./data/" + now
 
 shop_name = {
-    #"kasumi": "カスミ テクノパーク桜店",
+    "kasumi": "カスミ テクノパーク桜店",
     "marumo": "マルモ学園店",
     "aeon": "イオンつくば駅前店",
 }
@@ -69,7 +69,6 @@ def get_chirashi_data(shop):
 # generate pdf data from redirect URL
 def gen_chirashi_pdf(url, dirpath, outname):
     path = dirpath + "/" + outname
-    print("pathpath " + url)
     if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
                     print("pdf_error " + url)
                     tweet_error("@Rawashi_coins pdf_error " + url)
@@ -85,7 +84,8 @@ def pdf_to_png(root_path):
                 ppp_path = os.path.join(ppp, filename)
                 png_path = ppp_path.replace(".pdf", ".png")
                 print("convert " + org_path +  " to " + png_path)
-                if subprocess.call(["convert", "-density", "130", "-trim", org_path, png_path]) != 0:
+                if subprocess.call(["convert", "-density", "130", "-trim",
+                                    org_path, png_path]) != 0:
                     print("failed: " + org_path)
                     tweet_error("@Rawashi_coins png_error " + org_path)
 
@@ -97,13 +97,10 @@ def chirath(root_path, shop, scheme):
     text = "[" + shop_name[shop] + "] " + scheme + "のチラシ情報です"  
     for dirpath, _, filenames in os.walk(root_path):
         filenames.sort()
-        filenames.reverse()
         for filename in filenames:
-            print(filenames)
             if fnmatch.fnmatch(filename, "*.png"):
-                print("tweeting" + filename)
-                # st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing] " + text, in_reply_to_status_id=reply_id)
-                # reply_id = st.id
+                st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing] " + text, in_reply_to_status_id=reply_id)
+                reply_id = st.id
                 text = "(続き) " + text
                 sleep(5)
         else:
@@ -135,7 +132,6 @@ if __name__ == '__main__':
             currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
             outname = shop + str(i) + ".pdf"
-            print(chirashi)
             gen_chirashi_pdf(chirashi["url"], currentdir, outname)
             sleep(5)
             pdf_to_png(currentdir)
