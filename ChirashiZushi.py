@@ -124,7 +124,7 @@ def chirath(root_path, scheme):
     auth = get_oauth()
     api = API(auth)
     reply_id = None
-    text = unicode(scheme).encode('utf-8') + "のチラシ情報です"  
+    text = "@Rawashi_coins " + unicode(scheme).encode('utf-8') + "のチラシ情報です"  
     for dirpath, _, filenames in os.walk(root_path):
         filenames.sort()
         filenames.reverse()
