@@ -16,7 +16,7 @@ now = datetime.now().strftime("%s")
 parent = "./data/" + now
 
 shop_name = {
-    "kasumi": "カスミ テクノパーク桜店",
+    #"kasumi": "カスミ テクノパーク桜店",
     "marumo": "マルモ学園店",
     "aeon": "イオンつくば駅前店",
 }
@@ -25,28 +25,44 @@ shop_name = {
 # scrape HP and get chirashi url,scheme
 def get_chirashi_data(shop):
     chirashis = []
-    
+    c_url = ""
+    c_scheme = ""
     if shop == "kasumi":
         html = open("./data/kasumi_sakura.html", "r").read()
         soup = BeautifulSoup(html, "lxml")
         for chirashi in soup.select("#chirashiList1")[0].children:
-            c_id = chirashi.get("id")
-            c_scheme = chirashi.select(".shufoo-scheme")[0].contents[0]
+            c_scheme = chirashi.select(".shufoo-scheme")[0].contents[0].encode("utf-8")
             before_url = chirashi.select(".shufoo-pdf")[0].a.get("href")
             second_html = urllib2.urlopen(before_url).read()
             second_soup = BeautifulSoup(second_html, "lxml")
             c_url = second_soup.meta.get("content").lstrip("0;URL=")
-            c_data = {
-                "url": c_url,
-                "scheme": c_scheme.encode("utf-8"),
-                "id": c_id,
-            }
-            chirashis.append(c_data)
+        c_data = {
+            "url": c_url,
+            "scheme": c_scheme,
+        }
+        chirashis.append(c_data)
 
     elif shop == "marumo":
-        pass
+        html = urllib2.urlopen("http://www.super-marumo.com/tirasi/tirasi.html").read()
+        soup = BeautifulSoup(html, "lxml")
+        kikan = soup.select("#kikan")[0].h3.children
+        for child in kikan:
+            if str(type(child)) == "<class 'bs4.element.Tag'>":
+                c_scheme += child.string.encode("utf-8")
+            else:
+                c_scheme += child.encode("utf-8")
+        fusens = soup.select("#fusen")[0].find_all("a")
+        for fusen in fusens:
+            if str(fusen.find("img").get("alt").encode("utf-8")) == "学園店":
+                c_url = "http://www.super-marumo.com/tirasi/" + fusen.get("href").encode("utf-8")
+        c_data = {
+            "url": c_url,
+            "scheme": c_scheme,
+        }
+        chirashis.append(c_data)
     elif shop == "aeon":
         pass
+
     return chirashis
 
 
@@ -83,9 +99,11 @@ def chirath(root_path, shop, scheme):
         filenames.sort()
         filenames.reverse()
         for filename in filenames:
+            print(filenames)
             if fnmatch.fnmatch(filename, "*.png"):
-                st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing] " + text, in_reply_to_status_id=reply_id)
-                reply_id = st.id
+                print("tweeting" + filename)
+                # st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing] " + text, in_reply_to_status_id=reply_id)
+                # reply_id = st.id
                 text = "(続き) " + text
                 sleep(5)
         else:
@@ -117,6 +135,7 @@ if __name__ == '__main__':
             currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
             outname = shop + str(i) + ".pdf"
+            print(chirashi)
             gen_chirashi_pdf(chirashi["url"], currentdir, outname)
             sleep(5)
             pdf_to_png(currentdir)
