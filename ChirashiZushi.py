@@ -34,13 +34,17 @@ def get_chirashi_url(shop):
         for chirashi in soup.select("#chirashiList1")[0].children:
             c_id = chirashi.get("id")
             c_scheme = chirashi.select(".shufoo-scheme")[0].contents[0]
-            c_url = chirashi.select(".shufoo-pdf")[0].a.get("href")
+            before_url = chirashi.select(".shufoo-pdf")[0].a.get("href")
+            second_html = urllib2.urlopen(before_url).read()
+            second_soup = BeautifulSoup(second_html, "lxml")
+            c_url = second_soup.meta.get("content").lstrip("0;URL=")
             c_data = {
                 "url" : c_url,
                 "scheme" : c_scheme,
                 "id" : c_id,
             }
             chirashis.append(c_data)
+
     elif shop=="marumo":
         pass
     elif shop=="aeon":
@@ -64,8 +68,8 @@ def get_chirashi_url(shop):
 def gen_chirashi_pdf(url, dirpath, outname):
     path = dirpath + "/" + outname
     if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
-                    print "failed: {0}".format(url)
-                    tweet_error("@Rawashi_coins pdf_error")
+                    print "pdf_error " + url
+                    tweet_error("@Rawashi_coins pdf_error " + url)
 
 
 # # generate pdf data from redirect URL
