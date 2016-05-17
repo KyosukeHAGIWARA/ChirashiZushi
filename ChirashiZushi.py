@@ -36,11 +36,11 @@ def get_chirashi_data(shop):
             second_html = urllib2.urlopen(before_url).read()
             second_soup = BeautifulSoup(second_html, "lxml")
             c_url = second_soup.meta.get("content").lstrip("0;URL=")
-        c_data = {
-            "url": c_url,
-            "scheme": c_scheme,
-        }
-        chirashis.append(c_data)
+            c_data = {
+                "url": c_url,
+                "scheme": c_scheme,
+            }
+            chirashis.append(c_data)
 
     elif shop == "marumo":
         html = urllib2.urlopen("http://www.super-marumo.com/tirasi/tirasi.html").read()
@@ -99,7 +99,7 @@ def chirath(root_path, shop, scheme):
         filenames.sort()
         for filename in filenames:
             if fnmatch.fnmatch(filename, "*.png"):
-                st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing] " + text, in_reply_to_status_id=reply_id)
+                st = api.update_with_media(filename=(root_path + "/" + filename), status=text, in_reply_to_status_id=reply_id)
                 reply_id = st.id
                 text = "(続き) " + text
                 sleep(5)
