@@ -149,9 +149,9 @@ if __name__ == '__main__':
         shopdir = parent + "/" + shop
         os.makedirs(shopdir)
         for i, chirashi in enumerate(get_chirashi_url(shop)):
-            currentdir = shop + str(i)
+            currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
-            outname = currentdir + ".pdf"
+            outname = shop + str(i) + ".pdf"
             gen_chirashi_pdf(chirashi["url"], currentdir, outname)
             sleep(5)
             pdf_to_png(currentdir)
