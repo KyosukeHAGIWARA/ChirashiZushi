@@ -108,7 +108,7 @@ def chirath(root_path, shop, scheme):
 
                 if req_media.status_code != 200:
                     print("error: %s", req_media.text)
-                    tweet_error("media_error " + filename)
+                    tweet_error("@Rawashi_coins media_error " + filename)
                     exit()
 
                 media_ids += str(json.loads(req_media.text)['media_id_string']) + ","
@@ -119,7 +119,8 @@ def chirath(root_path, shop, scheme):
         req_text = twitter.post(url_text, params=params)
         if req_text.status_code != 200:
             print("tweet_error " + req_text.text)
-            exit()
+            tweet_error("@Rawashi_coins tweet_error " + req_text.text)
+
 
 
 # return twitter oath
@@ -152,5 +153,5 @@ if __name__ == '__main__':
             gen_chirashi_pdf(chirashi["url"], currentdir, outname)
             sleep(5)
             pdf_to_png(currentdir)
-            sleep(10)
+            sleep(5)
             chirath(currentdir, shop, chirashi["scheme"])
