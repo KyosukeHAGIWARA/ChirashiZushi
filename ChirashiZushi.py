@@ -145,8 +145,6 @@ if __name__ == '__main__':
         shopdir = parent + "/" + shop
         os.makedirs(shopdir)
         chirashis = get_chirashi_data(shop)
-        print("chirashis ")
-        print(chirashis)
         for i, chirashi in enumerate(chirashis):
             currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
