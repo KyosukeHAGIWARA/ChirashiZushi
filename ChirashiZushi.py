@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 import urllib2
 from time import sleep
 from datetime import datetime
-from tweepy.auth import OAuthHandler
-from tweepy.api import API
+import json
+from requests_oauthlib import OAuth1Session
 import ConfigParser
 
 
@@ -36,11 +36,11 @@ def get_chirashi_data(shop):
             second_html = urllib2.urlopen(before_url).read()
             second_soup = BeautifulSoup(second_html, "lxml")
             c_url = second_soup.meta.get("content").lstrip("0;URL=")
-        c_data = {
-            "url": c_url,
-            "scheme": c_scheme,
-        }
-        chirashis.append(c_data)
+            c_data = {
+                "url": c_url,
+                "scheme": c_scheme,
+            }
+            chirashis.append(c_data)
 
     elif shop == "marumo":
         html = urllib2.urlopen("http://www.super-marumo.com/tirasi/tirasi.html").read()
@@ -92,35 +92,52 @@ def pdf_to_png(root_path):
 
 # tweet Chirashi images
 def chirath(root_path, shop, scheme):
-    api = API(get_oauth())
-    reply_id = None
-    text = "[" + shop_name[shop] + "] " + scheme + "のチラシ情報です"  
+    url_media = "https://upload.twitter.com/1.1/media/upload.json"
+    url_text = "https://api.twitter.com/1.1/statuses/update.json"
+
+    twitter = get_oauth()
+
+    text = "[" + shop_name[shop] + "] " + scheme + "のチラシ情報です"
     for dirpath, _, filenames in os.walk(root_path):
         filenames.sort()
+        media_ids = ""
         for filename in filenames:
             if fnmatch.fnmatch(filename, "*.png"):
-                st = api.update_with_media(filename=(root_path + "/" + filename), status="[testing] " + text, in_reply_to_status_id=reply_id)
-                reply_id = st.id
-                text = "(続き) " + text
-                sleep(5)
+                files = {"media": open(root_path+"/"+filename, 'rb')}
+                req_media = twitter.post(url_media, files=files)
+
+                if req_media.status_code != 200:
+                    print("error: %s", req_media.text)
+                    tweet_error("media_error " + filename)
+                    exit()
+
+                media_ids += str(json.loads(req_media.text)['media_id_string']) + ","
         else:
-            reply_id = None
+            media_ids.rstrip(",")
+
+        params = {'status': text, "media_ids": media_ids}
+        req_text = twitter.post(url_text, params=params)
+        if req_text.status_code != 200:
+            print("tweet_error " + req_text.text)
+            exit()
 
 
 # return twitter oath
 def get_oauth():
     conf = ConfigParser.SafeConfigParser()
     conf.read("./twitter.ini")
-    auth = OAuthHandler(conf.get("Twitter", "CK"), conf.get("Twitter", "CS"))
-    auth.set_access_token(conf.get("Twitter", "AT"), conf.get("Twitter", "AS"))
-    return auth
+    CK = conf.get("Twitter", "CK")
+    CS = conf.get("Twitter", "CS")
+    AT = conf.get("Twitter", "AT")
+    AS = conf.get("Twitter", "AS")
+    return OAuth1Session(CK, CS, AT, AS)
 
 
 def tweet_error(text):
-    auth = get_oauth()
-    api = API(auth)
-    api.update_status(status=text)
-
+    url_text = "https://api.twitter.com/1.1/statuses/update.json"
+    twitter = get_oauth()
+    params = {'status': text}
+    req_text = twitter.post(url_text, params=params)
 
 if __name__ == '__main__':
     os.makedirs(parent)
@@ -128,6 +145,8 @@ if __name__ == '__main__':
         shopdir = parent + "/" + shop
         os.makedirs(shopdir)
         chirashis = get_chirashi_data(shop)
+        print("chirashis ")
+        print(chirashis)
         for i, chirashi in enumerate(chirashis):
             currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
