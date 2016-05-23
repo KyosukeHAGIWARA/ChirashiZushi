@@ -84,7 +84,7 @@ def pdf_to_png(root_path):
                 ppp_path = os.path.join(ppp, filename)
                 png_path = ppp_path.replace(".pdf", ".png")
                 print("convert " + org_path +  " to " + png_path)
-                if subprocess.call(["convert", "-density", "130", "-trim",
+                if subprocess.call(["convert", "-density", "120", "-trim",
                                     org_path, png_path]) != 0:
                     print("failed: " + org_path)
                     tweet_error("@Rawashi_coins png_error " + org_path)
