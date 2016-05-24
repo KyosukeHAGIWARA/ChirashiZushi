@@ -32,15 +32,16 @@ def get_chirashi_data(shop):
         soup = BeautifulSoup(html, "lxml")
         for chirashi in soup.select("#chirashiList1")[0].children:
             c_scheme = chirashi.select(".shufoo-scheme")[0].contents[0].encode("utf-8")
-            before_url = chirashi.select(".shufoo-pdf")[0].a.get("href")
-            second_html = urllib2.urlopen(before_url).read()
-            second_soup = BeautifulSoup(second_html, "lxml")
-            c_url = second_soup.meta.get("content").lstrip("0;URL=")
-            c_data = {
-                "url": c_url,
-                "scheme": c_scheme,
-            }
-            chirashis.append(c_data)
+            if chirashi.select(".shufoo-pdf"):
+                before_url = chirashi.select(".shufoo-pdf")[0].a.get("href")
+                second_html = urllib2.urlopen(before_url).read()
+                second_soup = BeautifulSoup(second_html, "lxml")
+                c_url = second_soup.meta.get("content").lstrip("0;URL=")
+                c_data = {
+                    "url": c_url,
+                    "scheme": c_scheme,
+                }
+                chirashis.append(c_data)
 
     elif shop == "marumo":
         html = urllib2.urlopen("http://www.super-marumo.com/tirasi/tirasi.html").read()
