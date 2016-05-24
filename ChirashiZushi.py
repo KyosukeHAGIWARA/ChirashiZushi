@@ -93,13 +93,13 @@ def pdf_to_png(root_path):
 
 
 # tweet Chirashi images
-def chirath(root_path, shop, scheme):
+def chirath(root_path, shop, c_data):
     url_media = "https://upload.twitter.com/1.1/media/upload.json"
     url_text = "https://api.twitter.com/1.1/statuses/update.json"
 
     twitter = get_oauth()
 
-    text = "[" + shop_name[shop] + "] " + scheme + "のチラシ情報です"
+    text = "[" + shop_name[shop] + "] " + c_data["scheme"] + "のチラシ情報です " + c_data["url"]
     for dirpath, _, filenames in os.walk(root_path):
         filenames.sort()
         media_ids = ""
@@ -156,4 +156,4 @@ if __name__ == '__main__':
             sleep(5)
             pdf_to_png(currentdir)
             sleep(5)
-            chirath(currentdir, shop, chirashi["scheme"])
+            chirath(currentdir, shop, chirashi)
