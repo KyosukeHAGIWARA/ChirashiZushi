@@ -15,7 +15,7 @@ import ConfigParser
 now = datetime.now().strftime("%s")
 parent = "./data/" + now
 
-shop_name = {
+shop_dict = {
     "kasumi": "カスミ",
     "marumo": "マルモ",
     "aeon": "イオンつくば駅前店",
@@ -23,16 +23,16 @@ shop_name = {
 
 
 # scrape HP and get chirashi url,scheme
-def get_chirashi_data(shop):
-    chirashis = []
+def get_chirashi_data(shop_name):
+    chirashi_list = []
     c_url = ""
     c_scheme = ""
-    if shop == "kasumi":
+    if shop_name == "kasumi":
         html = open("./data/kasumi_sakura.html", "r").read()
         soup = BeautifulSoup(html, "lxml")
-        for chirashi in soup.select("#chirashiList1")[0].children:
-            c_scheme = chirashi.select(".shufoo-scheme")[0].contents[0].encode("utf-8")
-            chirashi_pdf = chirashi.select(".shufoo-pdf")
+        for chirashi_soup in soup.select("#chirashiList1")[0].children:
+            c_scheme = chirashi_soup.select(".shufoo-scheme")[0].contents[0].encode("utf-8")
+            chirashi_pdf = chirashi_soup.select(".shufoo-pdf")
             if chirashi_pdf:
                 before_url = chirashi_pdf[0].a.get("href")
                 second_html = urllib2.urlopen(before_url).read()
@@ -42,9 +42,9 @@ def get_chirashi_data(shop):
                     "url": c_url,
                     "scheme": c_scheme,
                 }
-                chirashis.append(c_data)
+                chirashi_list.append(c_data)
 
-    elif shop == "marumo":
+    elif shop_name == "marumo":
         html = urllib2.urlopen("http://www.super-marumo.com/tirasi/tirasi.html").read()
         soup = BeautifulSoup(html, "lxml")
         kikan = soup.select("#kikan")[0].h3.children
@@ -61,14 +61,14 @@ def get_chirashi_data(shop):
             "url": c_url,
             "scheme": c_scheme,
         }
-        chirashis.append(c_data)
+        chirashi_list.append(c_data)
 
-    elif shop == "aeon":
+    elif shop_name == "aeon":
         html = open("./data/aeon.html", "r").read()
         soup = BeautifulSoup(html, "lxml")
-        for chirashi in soup.select("#chirashiList1")[0].children:
-            c_scheme = chirashi.select(".shufoo-chirashi_wrapper")[0].get("title").encode("utf-8")
-            chirashi_pdf = chirashi.select(".shufoo-pdf")
+        for chirashi_soup in soup.select("#chirashiList1")[0].children:
+            c_scheme = chirashi_soup.select(".shufoo-chirashi_wrapper")[0].get("title").encode("utf-8")
+            chirashi_pdf = chirashi_soup.select(".shufoo-pdf")
             if chirashi_pdf:
                 before_url = chirashi_pdf[0].a.get("href")
                 second_html = urllib2.urlopen(before_url).read()
@@ -78,14 +78,14 @@ def get_chirashi_data(shop):
                     "url": c_url,
                     "scheme": c_scheme,
                 }
-                chirashis.append(c_data)
+                chirashi_list.append(c_data)
 
-    return chirashis
+    return chirashi_list
 
 
 # generate pdf data from redirect URL
-def gen_chirashi_pdf(url, dirpath, outname):
-    path = dirpath + "/" + outname
+def gen_chirashi_pdf(url, dirpath, out_name):
+    path = dirpath + "/" + out_name
     if subprocess.call(["python", "-m", "wget", "-o", path, url]) != 0:
                     print("pdf_error " + url)
                     tweet_error("@Rawashi_coins pdf_error " + url)
@@ -100,7 +100,7 @@ def pdf_to_png(root_path):
                 ppp = dirpath
                 ppp_path = os.path.join(ppp, filename)
                 png_path = ppp_path.replace(".pdf", ".png")
-                print("convert " + org_path +  " to " + png_path)
+                print("convert " + org_path + " to " + png_path)
                 if subprocess.call(["convert", "-density", "120", "-trim",
                                     org_path, png_path]) != 0:
                     print("failed: " + org_path)
@@ -108,13 +108,13 @@ def pdf_to_png(root_path):
 
 
 # tweet Chirashi images
-def chirath(root_path, shop, c_data):
+def chirath(root_path, shop_name, c_data):
     url_media = "https://upload.twitter.com/1.1/media/upload.json"
     url_text = "https://api.twitter.com/1.1/statuses/update.json"
 
     twitter = get_oauth()
 
-    text = "[" + shop_name[shop] + "] " + c_data["scheme"] + "のチラシ情報です " + c_data["url"]
+    text = "[" + shop_dict[shop_name] + "] " + c_data["scheme"] + "のチラシ情報です " + c_data["url"]
     for dirpath, _, filenames in os.walk(root_path):
         filenames.sort()
         media_ids = ""
@@ -143,22 +143,22 @@ def chirath(root_path, shop, c_data):
 def get_oauth():
     conf = ConfigParser.SafeConfigParser()
     conf.read("./twitter.ini")
-    CK = conf.get("Twitter", "CK")
-    CS = conf.get("Twitter", "CS")
-    AT = conf.get("Twitter", "AT")
-    AS = conf.get("Twitter", "AS")
-    return OAuth1Session(CK, CS, AT, AS)
+    consumer_key = conf.get("Twitter", "CK")
+    consumer_secret = conf.get("Twitter", "CS")
+    access_token = conf.get("Twitter", "AT")
+    access_secret = conf.get("Twitter", "AS")
+    return OAuth1Session(consumer_key, consumer_secret, access_token, access_secret)
 
 
 def tweet_error(text):
     url_text = "https://api.twitter.com/1.1/statuses/update.json"
     twitter = get_oauth()
     params = {'status': text}
-    req_text = twitter.post(url_text, params=params)
+    twitter.post(url_text, params=params)
 
 if __name__ == '__main__':
     os.makedirs(parent)
-    for shop in shop_name.keys():
+    for shop in shop_dict.keys():
         shopdir = parent + "/" + shop
         os.makedirs(shopdir)
         chirashis = get_chirashi_data(shop)
