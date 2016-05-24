@@ -18,7 +18,7 @@ parent = "./data/" + now
 shop_name = {
     "kasumi": "カスミ",
     "marumo": "マルモ",
-    #"aeon": "イオンつくば駅前店",
+    "aeon": "イオンつくば駅前店",
 }
 
 
@@ -62,8 +62,23 @@ def get_chirashi_data(shop):
             "scheme": c_scheme,
         }
         chirashis.append(c_data)
+
     elif shop == "aeon":
-        pass
+        html = open("./data/aeon.html", "r").read()
+        soup = BeautifulSoup(html, "lxml")
+        for chirashi in soup.select("#chirashiList1")[0].children:
+            c_scheme = chirashi.select(".shufoo-chirashi_wrapper")[0].get("title").encode("utf-8")
+            chirashi_pdf = chirashi.select(".shufoo-pdf")
+            if chirashi_pdf:
+                before_url = chirashi_pdf[0].a.get("href")
+                second_html = urllib2.urlopen(before_url).read()
+                second_soup = BeautifulSoup(second_html, "lxml")
+                c_url = second_soup.meta.get("content").lstrip("0;URL=")
+                c_data = {
+                    "url": c_url,
+                    "scheme": c_scheme,
+                }
+                chirashis.append(c_data)
 
     return chirashis
 
@@ -122,7 +137,6 @@ def chirath(root_path, shop, c_data):
         if req_text.status_code != 200:
             print("tweet_error " + req_text.text)
             tweet_error("@Rawashi_coins tweet_error " + req_text.text)
-
 
 
 # return twitter oath

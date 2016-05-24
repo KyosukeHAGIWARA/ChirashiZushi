@@ -6,27 +6,47 @@ const http = require("http");
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
-let mainWindow;
+let kasumiWindow;
 
 function createWindow () {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({show:false});
+    // KASUMI TECHNOPARK SAKURA
+    var kasumi = 'http://www.kasumi.co.jp/tenpo/kennan/technopark_sakura.html';
+    var kasumiWindow = new BrowserWindow({show:false});
 
-  // KASUMI TECHNOPARK SAKURA
-  var kasumi = 'http://www.kasumi.co.jp/tenpo/kennan/technopark_sakura.html';
-  
-  mainWindow.loadURL(kasumi);
-  mainWindow.webContents.on("did-finish-load", function(){
-    mainWindow.webContents.savePage("./data/kasumi_sakura.html", "HTMLComplete", function(error){
-      if(!error){
-        console.log("save complete");
-        mainWindow.close();
-      }else{
-        console.log("ERROR! NO SAVE")
-      }
+    // AEON TSUKUBA STATION
+    var aeon = 'http://shop.aeon.jp/store/01/0117270/';
+    var aeonWindow = new BrowserWindow({show:false});
+
+    kasumiWindow.loadURL(kasumi);
+    kasumiWindow.webContents.on("did-finish-load", function(){
+        kasumiWindow.webContents.savePage("./data/kasumi_sakura.html", "HTMLComplete", function(error){
+            if(!error){
+                console.log("save complete");
+            }else{
+                console.log("ERROR! NO SAVE");
+            }
+
+            aeonWindow.loadURL(aeon);
+            aeonWindow.webContents.on("did-finish-load", function(){
+                aeonWindow.webContents.savePage("./data/aeon.html", "HTMLComplete", function(error){
+                    if(!error){
+                        console.log("save complete");
+                    }else{
+                        console.log("ERROR! NO SAVE");
+                    }
+                    app.quit();
+
+                })
+
+
+            })
+        })
     })
-  })
+
+
 }
+
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
