@@ -31,19 +31,20 @@ def get_chirashi_data(shop_name):
     if shop_name == "kasumi":
         html = open("./data/kasumi_sakura.html", "r").read()
         soup = BeautifulSoup(html, "lxml")
-        for chirashi_soup in soup.select("#chirashiList1")[0].children:
-            c_scheme = chirashi_soup.select(".shufoo-scheme")[0].contents[0].encode("utf-8")
-            chirashi_pdf = chirashi_soup.select(".shufoo-pdf")
-            if chirashi_pdf:
-                before_url = chirashi_pdf[0].a.get("href")
-                second_html = urllib2.urlopen(before_url).read()
-                second_soup = BeautifulSoup(second_html, "lxml")
-                c_url = second_soup.meta.get("content").lstrip("0;URL=")
-                c_data = {
-                    "url": [c_url],
-                    "scheme": c_scheme,
-                }
-                chirashi_list.append(c_data)
+        if soup.select("#chirashiList1"):
+            for chirashi_soup in soup.select("#chirashiList1")[0].children:
+                c_scheme = chirashi_soup.select(".shufoo-scheme")[0].contents[0].encode("utf-8")
+                chirashi_pdf = chirashi_soup.select(".shufoo-pdf")
+                if chirashi_pdf:
+                    before_url = chirashi_pdf[0].a.get("href")
+                    second_html = urllib2.urlopen(before_url).read()
+                    second_soup = BeautifulSoup(second_html, "lxml")
+                    c_url = second_soup.meta.get("content").lstrip("0;URL=")
+                    c_data = {
+                        "url": [c_url],
+                        "scheme": c_scheme,
+                    }
+                    chirashi_list.append(c_data)
 
     elif shop_name == "marumo":
         html = urllib2.urlopen("http://www.super-marumo.com/tirasi/tirasi.html").read()
@@ -67,19 +68,20 @@ def get_chirashi_data(shop_name):
     elif shop_name == "aeon":
         html = open("./data/aeon.html", "r").read()
         soup = BeautifulSoup(html, "lxml")
-        for chirashi_soup in soup.select("#chirashiList1")[0].children:
-            c_scheme = chirashi_soup.select(".shufoo-chirashi_wrapper")[0].get("title").encode("utf-8")
-            chirashi_pdf = chirashi_soup.select(".shufoo-pdf")
-            if chirashi_pdf:
-                before_url = chirashi_pdf[0].a.get("href")
-                second_html = urllib2.urlopen(before_url).read()
-                second_soup = BeautifulSoup(second_html, "lxml")
-                c_url = second_soup.meta.get("content").lstrip("0;URL=")
-                c_data = {
-                    "url": [c_url],
-                    "scheme": c_scheme,
-                }
-                chirashi_list.append(c_data)
+        if soup.select("#chirashiList1"):
+            for chirashi_soup in soup.select("#chirashiList1")[0].children:
+                c_scheme = chirashi_soup.select(".shufoo-chirashi_wrapper")[0].get("title").encode("utf-8")
+                chirashi_pdf = chirashi_soup.select(".shufoo-pdf")
+                if chirashi_pdf:
+                    before_url = chirashi_pdf[0].a.get("href")
+                    second_html = urllib2.urlopen(before_url).read()
+                    second_soup = BeautifulSoup(second_html, "lxml")
+                    c_url = second_soup.meta.get("content").lstrip("0;URL=")
+                    c_data = {
+                        "url": [c_url],
+                        "scheme": c_scheme,
+                    }
+                    chirashi_list.append(c_data)
 
     elif shop_name == "sundrug":
         html = urllib2.urlopen("http://www.e-map.ne.jp/p/sundrug/dtl/4601/").read()
@@ -182,7 +184,6 @@ if __name__ == '__main__':
         shopdir = parent + "/" + shop
         os.makedirs(shopdir)
         chirashis = get_chirashi_data(shop)
-        print(chirashis)
         for i, chirashi in enumerate(chirashis):
             currentdir = shopdir + "/" + shop + str(i)
             os.makedirs(currentdir)
