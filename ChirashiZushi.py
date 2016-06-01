@@ -20,13 +20,14 @@ shop_dict = {
     "marumo": "マルモ",
     "aeon": "イオンつくば駅前店",
     "sundrug": "サンドラッグつくば店",
+    "trial": "トライアルつくば学園都市店",
 }
 
 
 # scrape HP and get chirashi url,scheme
 def get_chirashi_data(shop_name):
     chirashi_list = []
-    c_url = ""
+    c_url = []
     c_scheme = ""
     if shop_name == "kasumi":
         html = open("./data/kasumi_sakura.html", "r").read()
@@ -36,12 +37,13 @@ def get_chirashi_data(shop_name):
                 c_scheme = chirashi_soup.select(".shufoo-scheme")[0].contents[0].encode("utf-8")
                 chirashi_pdf = chirashi_soup.select(".shufoo-pdf")
                 if chirashi_pdf:
+                    c_url = []
                     before_url = chirashi_pdf[0].a.get("href")
                     second_html = urllib2.urlopen(before_url).read()
                     second_soup = BeautifulSoup(second_html, "lxml")
-                    c_url = second_soup.meta.get("content").lstrip("0;URL=")
+                    c_url.append(second_soup.meta.get("content").lstrip("0;URL="))
                     c_data = {
-                        "url": [c_url],
+                        "url": c_url,
                         "scheme": c_scheme,
                     }
                     chirashi_list.append(c_data)
@@ -58,9 +60,9 @@ def get_chirashi_data(shop_name):
         fusens = soup.select("#fusen")[0].find_all("a")
         for fusen in fusens:
             if str(fusen.find("img").get("alt").encode("utf-8")) == "学園店":
-                c_url = "http://www.super-marumo.com/tirasi/" + fusen.get("href").encode("utf-8")
+                c_url.append("http://www.super-marumo.com/tirasi/" + fusen.get("href").encode("utf-8"))
         c_data = {
-            "url": [c_url],
+            "url": c_url,
             "scheme": c_scheme,
         }
         chirashi_list.append(c_data)
@@ -76,9 +78,9 @@ def get_chirashi_data(shop_name):
                     before_url = chirashi_pdf[0].a.get("href")
                     second_html = urllib2.urlopen(before_url).read()
                     second_soup = BeautifulSoup(second_html, "lxml")
-                    c_url = second_soup.meta.get("content").lstrip("0;URL=")
+                    c_url.append(second_soup.meta.get("content").lstrip("0;URL="))
                     c_data = {
-                        "url": [c_url],
+                        "url": c_url,
                         "scheme": c_scheme,
                     }
                     chirashi_list.append(c_data)
@@ -98,6 +100,21 @@ def get_chirashi_data(shop_name):
                 }
                 chirashi_list.append(c_data)
 
+    elif shop_name == "trial":
+        super_url = "https://www.trial-net.co.jp/shops/view/326"
+        html = urllib2.urlopen(super_url).read()
+        soup = BeautifulSoup(html, "lxml")
+        if soup.select(".flier_block"):
+            c_url = []
+            for chirashi_soup in soup.select(".flier_block")[0].find_all("a"):
+                sub_url = chirashi_soup.get("href")
+                c_url.append("https://www.trial-net.co.jp"+sub_url)
+            c_data = {
+                "url": c_url,
+                "scheme": None,
+            }
+            chirashi_list.append(c_data)
+
     return chirashi_list
 
 
@@ -110,7 +127,7 @@ def gen_chirashi_image(web_url, dirpath, out_name):
 
 
 # convert Chirashi pdf to png
-def pdf_to_png(root_path):
+def pdf_to_png(root_path, density):
     for dirpath, _, filenames in os.walk(root_path):
         for filename in filenames:
             if fnmatch.fnmatch(filename, u"*.pdf"):
@@ -119,7 +136,7 @@ def pdf_to_png(root_path):
                 ppp_path = os.path.join(ppp, filename)
                 png_path = ppp_path.replace(".pdf", ".png")
                 print("convert " + org_path + " to " + png_path)
-                if subprocess.call(["convert", "-density", "120", "-trim",
+                if subprocess.call(["convert", "-density", density, "-trim",
                                     org_path, png_path]) != 0:
                     print("failed: " + org_path)
                     tweet_error("@Rawashi_coins png_error " + org_path)
@@ -132,13 +149,19 @@ def chirath(root_path, shop_name, c_data):
 
     twitter = get_oauth()
 
-    text = "[" + shop_dict[shop_name] + "] " + c_data["scheme"] + "のチラシ情報です"
+    if c_data["scheme"]:
+        text = "[" + shop_dict[shop_name] + "] " + c_data["scheme"] + "のチラシ情報を散らします"
+    else:
+        text = "[" + shop_dict[shop_name] + "] チラシ情報を散らします"
+
     for uraru in c_data["url"]:
         text += " " + uraru
 
     for dirpath, _, filenames in os.walk(root_path):
         if not shop_name == "sundrug":
             filenames.sort()
+        if shop_name == "trial":
+            filenames.reverse()
         media_ids = ""
         for filename in filenames:
             if fnmatch.fnmatch(filename, "*.png"):
@@ -195,6 +218,9 @@ if __name__ == '__main__':
                 gen_chirashi_image(url, currentdir, outname)
                 sleep(5)
             if not shop == "sundrug":
-                pdf_to_png(currentdir)
+                dens = "120"
+                if shop == "trial":
+                    dens = "40"
+                pdf_to_png(currentdir, dens)
                 sleep(5)
             chirath(currentdir, shop, chirashi)
