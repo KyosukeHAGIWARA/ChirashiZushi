@@ -1,6 +1,7 @@
 #ちらしずし
-<img src="https://github.com/KyosukeHagiwara/ChirashiZushi/blob/master/chirashizushi.png" width="200px">
-##Description
+<img src="https://github.com/KyosukeHagiwara/ChirashiZushi/blob/master/icon.jpg" width="200px">
+
+##作り方
 + カスミのチラシはカスミHPから見れますが、毎回毎回見に行くのも何なので、チラシの画像だけtwitterで見れればなぁと思って作りました。
 + HPをスクレイピングしてpdf拾ってきてpngに直して投稿みたいなちょっとめんどくさいことやってます。単に近道を知らないだけです。
 + pdf->pngはImagemagickを使いました。丸パクさせてもらったやつ->[ImageMagickでPDFを画像に変換する](http://qiita.com/polikeiji/items/cc0929bc0171b6348f33 "Qiita")
@@ -15,13 +16,13 @@
     + サンドラッグつくば店
     + トライアル　つくば学園都市店
     
-##Usage
+##味
 + 毎日9/13/17時頃にその時発表されているチラシをtweetします。
 + それ以外にめぼしい機能はありません。
 + 直したい点もちょくちょくあるのでどうにかしたいです。
 
 よろしくおねがいします。
 
-##License
+##調理資格
 MIT
 
