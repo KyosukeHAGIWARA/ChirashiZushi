@@ -1,6 +1,7 @@
 #ちらしずし
 <img src="https://github.com/KyosukeHagiwara/ChirashiZushi/blob/master/icon.jpg" width="200px">
 
+[ちらしずし twitter](https://twitter.com/chirashi__zushi)
 ##作り方
 + カスミのチラシはカスミHPから見れますが、毎回毎回見に行くのも何なので、チラシの画像だけtwitterで見れればなぁと思って作りました。
 + HPをスクレイピングしてpdf拾ってきてpngに直して投稿みたいなちょっとめんどくさいことやってます。単に近道を知らないだけです。
